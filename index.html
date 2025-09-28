@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Affiliate Shop - Template</title>
+  <meta name="description" content="Affiliate-Produkt-Feed mit Amazon-Links. Einfach anpassen und Affiliate-Links einfügen." />
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#10b981;--muted:#94a3b8;--glass:rgba(255,255,255,0.04)}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:linear-gradient(180deg,#071021 0%, #071525 100%);color:#e6eef6;line-height:1.4}
+    .container{max-width:1100px;margin:36px auto;padding:0 18px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700;color:#032;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
+    .title{font-size:18px;font-weight:700}
+    .subtitle{font-size:12px;color:var(--muted)}
+    .searchbar{display:flex;gap:8px;align-items:center}
+    input[type="search"]{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:var(--glass);color:inherit;outline:none;width:260px}
+    select,button{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;cursor:pointer}
+    .hero{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+    .hero .left{max-width:66%}
+    h1{margin:0 0 6px 0;font-size:22px}
+    p.lead{margin:0;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:18px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:10px}
+    .card img{width:100%;height:160px;object-fit:cover;border-radius:8px;background:#0b1220}
+    .card h3{margin:0;font-size:16px}
+    .meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px}
+    .price{font-weight:700;color:var(--accent)}
+    .btn-row{display:flex;gap:8px}
+    .btn{flex:1;padding:10px;border-radius:10px;text-align:center;text-decoration:none;color:inherit;border:1px solid rgba(255,255,255,0.04)}
+    .btn-primary{background:linear-gradient(90deg,var(--accent),#06b6d4);color:#012;border:none}
+    footer{margin-top:26px;color:var(--muted);font-size:13px}
+    .disclaimer{background:#06101a;border-radius:8px;padding:10px;color:var(--muted);font-size:13px}
+    @media (max-width:640px){.hero{flex-direction:column;align-items:flex-start}.searchbar{margin-top:8px}input[type="search"]{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">A</div>
+        <div>
+          <div class="title">Affiliate Preview</div>
+          <div class="subtitle">Template — Produkte mit Amazon-Affiliate-Links</div>
+        </div>
+      </div>
+      <div class="searchbar">
+        <input id="q" type="search" placeholder="Suche Produkte..." />
+        <select id="sort">
+          <option value="relevance">Sortieren: Relevanz</option>
+          <option value="price-asc">Preis aufsteigend</option>
+          <option value="price-desc">Preis absteigend</option>
+        </select>
+        <button id="refresh">Refresh</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="left">
+        <h1>Handverlesene Produkte — direkt mit Amazon-Affiliate-Links</h1>
+        <p class="lead">Füge deine Amazon-Affiliate-Links in die Produktliste ein. Dieses Template ist responsiv und suchmaschinenfreundlich.</p>
+      </div>
+      <div class="right">
+        <div class="disclaimer">Hinweis: Diese Seite enthält Affiliate-Links. Als Amazon-Partner verdiene ich an qualifizierten Käufen.</div>
+      </div>
+    </section>
+
+    <main>
+      <div id="grid" class="grid"></div>
+    </main>
+
+    <footer>
+      <p>Rechtliches: Vergiss nicht, eine sichtbare Affiliate-Offenlegung zu haben und ggf. eine Datenschutzerklärung (GDPR) einzubauen, wenn du Besucher aus der EU hast.</p>
+    </footer>
+  </div>
+
+  <script>
+    const products = [
+      {id:1,title:'Halloween Kostüm Damen Gothic Kleid',price:26.98, image:'https://via.placeholder.com/640x480?text=Kopfhörer',desc:'Komfortabel, lange Akkulaufzeit',affiliate_url:'YOUR_AFFILIATE_LINK_HERE'},
+      {id:2,title:'Minimalistischer Rucksack',price:89.50, image:'https://via.placeholder.com/640x480?text=Rucksack',desc:'Wasserdicht, 20L',affiliate_url:'YOUR_AFFILIATE_LINK_HERE'},
+      {id:3,title:'Smart-Licht-Set',price:34.95, image:'https://via.placeholder.com/640x480?text=Smart+Licht',desc:'RGB LED, App-Steuerung',affiliate_url:'YOUR_AFFILIATE_LINK_HERE'}
+    ];
+
+    const grid = document.getElementById('grid');
+    function render(list){
+      grid.innerHTML = '';
+      list.forEach(p=>{
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <img loading="lazy" src="${p.image}" alt="${escapeHtml(p.title)}" />
+          <h3>${escapeHtml(p.title)}</h3>
+          <div class="meta"><span>${escapeHtml(p.desc)}</span><span class="price">€${p.price.toFixed(2)}</span></div>
+          <div class="btn-row">
+            <a class="btn" href="${p.affiliate_url}" target="_blank" rel="noopener noreferrer nofollow">Produkt ansehen</a>
+            <a class="btn btn-primary" href="${p.affiliate_url}" target="_blank" rel="noopener noreferrer nofollow">Zum Angebot</a>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function escapeHtml(s){return String(s).replace(/[&<>\\\"]/g, function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','\\\"':'&quot;'}[c]||c});}
+
+    const qIn = document.getElementById('q');
+    const sortIn = document.getElementById('sort');
+    document.getElementById('refresh').addEventListener('click', ()=>update());
+    qIn.addEventListener('input', ()=>update());
+    sortIn.addEventListener('change', ()=>update());
+
+    function update(){
+      const q = qIn.value.trim().toLowerCase();
+      let list = products.filter(p=> (p.title + ' ' + p.desc).toLowerCase().includes(q) );
+      const sort = sortIn.value;
+      if(sort==='price-asc') list.sort((a,b)=>a.price-b.price);
+      if(sort==='price-desc') list.sort((a,b)=>b.price-a.price);
+      render(list);
+    }
+
+    update();
+  </script>
+</body>
+</html>
