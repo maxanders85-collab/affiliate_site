@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Trendfinder – Empfehlungen</title>
+  <meta name="description" content="Produkte mit Amazon-Affiliate-Links – Empfehlungen mit direktem Link zum Angebot." />
+  <style>
+    :root{--bg:#0f1724;--accent:#10b981;--muted:#94a3b8;--glass:rgba(255,255,255,0.06)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:#0b1324;color:#e6eef6}
+    .wrap{max-width:1100px;margin:32px auto;padding:0 18px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .brand{display:flex;gap:10px;align-items:center}
+    .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:grid;place-items:center;font-weight:800;color:#001}
+    h1{font-size:20px;margin:0}
+    .tools{display:flex;gap:8px}
+    input[type="search"],select,button{border:1px solid rgba(255,255,255,.08);background:var(--glass);color:inherit;border-radius:10px;padding:8px 12px}
+    input[type="search"]{width:260px;background:rgba(255,255,255,.04)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:18px}
+    .card{border:1px solid rgba(255,255,255,.06);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+    .thumb{width:100%;height:200px;object-fit:cover;background:#07101c;display:block}
+    .body{display:flex;flex-direction:column;gap:10px;padding:14px;height:100%}
+    .title{font-size:16px;margin:0}
+    .desc{font-size:14px;color:var(--muted);margin:0;line-height:1.5;transition:max-height .2s ease}
+    /* Gekürzt standardmäßig */
+    .desc[data-expanded="false"]{max-height:64px;overflow:hidden}
+    /* Voll anzeigen */
+    .desc[data-expanded="true"]{max-height:1000px}
+    .toggle{align-self:flex-start;background:transparent;border:1px solid rgba(255,255,255,.15);padding:6px 10px;border-radius:8px;color:inherit;cursor:pointer;font-size:13px}
+    .spacer{flex:1 1 auto} /* schiebt den Button nach unten */
+    .actions{margin-top:8px;display:flex}
+    .btn{display:inline-block;text-align:center;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.08);text-decoration:none;color:inherit;width:100%}
+    .btn-primary{background:linear-gradient(90deg,var(--accent),#06b6d4);color:#002;border:none;font-weight:700}
+    footer{margin:28px 0 18px;color:var(--muted);font-size:13px}
+    .disclaimer{margin-top:14px;padding:10px;border:1px dashed rgba(255,255,255,.15);border-radius:10px;background:rgba(255,255,255,.03)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">TF</div>
+        <h1>Trendfinder – Empfehlungen</h1>
+      </div>
+      <div class="tools">
+        <input id="q" type="search" placeholder="Suche Produkte..." />
+        <select id="sort">
+          <option value="relevance">Relevanz</option>
+          <option value="az">Name A–Z</option>
+          <option value="za">Name Z–A</option>
+        </select>
+        <button id="refresh">Aktualisieren</button>
+      </div>
+    </header>
+
+    <main>
+      <div id="grid" class="grid"></div>
+    </main>
+
+    <footer>
+      <div class="disclaimer">
+        Hinweis: Diese Seite enthält Affiliate-Links. Als Amazon-Partner verdiene ich an qualifizierten Verkäufen.
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // === PRODUKTE: Bild → Name → Beschreibung → Link ===
+    const products = [
+      {
+        id: 1,
+        title: 'Sony WH-1000XM5 Kopfhörer – Premium Noise Cancelling mit bis zu 30 Stunden Akkulaufzeit für unterwegs',
+        image: 'https://m.media-amazon.com/images/I/71o8Q5XJS5L._AC_SL1500_.jpg',
+        desc: 'Over-Ear Bluetooth Kopfhörer mit branchenführendem Noise Cancelling, leichter Bauweise, Mehrpunktverbindung und App-Steuerung. Ideal für Reisen, Büro und Alltag.',
+        affiliate_url: 'https://www.amazon.de/dp/B09TGW56J9?tag=DEINPARTNERID-21'
+      },
+      {
+        id: 2,
+        title: 'Fjällräven Kånken Rucksack 16L',
+        image: 'https://m.media-amazon.com/images/I/81rxdYFzlmL._AC_SL1500_.jpg',
+        desc: 'Robuster Tagesrucksack mit ikonischem Design, bequemen Trägern und praktischer Fronttasche. Perfekt für Schule, Uni und Freizeit.',
+        affiliate_url: 'https://www.amazon.de/dp/B002P8MZOU?tag=DEINPARTNERID-21'
+      },
+      {
+        id: 3,
+        title: 'Philips Hue White & Color Ambiance Starter Set (E27)',
+        image: 'https://m.media-amazon.com/images/I/71gZcHnUchL._AC_SL1500_.jpg',
+        desc: 'Smart Home Beleuchtung mit Bridge, Millionen Farben, Routinen, Sprachsteuerung (Alexa/Google). Schnell installiert und flexibel erweiterbar.',
+        affiliate_url: 'https://www.amazon.de/dp/B08H8QX4VC?tag=DEINPARTNERID-21'
+      }
+    ];
+
+    const grid = document.getElementById('grid');
+
+    function escapeHtml(s){return String(s).replace(/[&<>\\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||c));}
+
+    function productCard(p){
+      const article = document.createElement('article');
+      article.className = 'card';
+
+      const img = document.createElement('img');
+      img.className = 'thumb';
+      img.loading = 'lazy';
+      img.src = p.image;
+      img.alt = p.title;
+
+      const body = document.createElement('div');
+      body.className = 'body';
+
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = p.title;
+
+      const desc = document.createElement('p');
+      desc.className = 'desc';
+      desc.dataset.expanded = 'false';
+      desc.textContent = p.desc;
+
+      const toggle = document.createElement('button');
+      toggle.className = 'toggle';
+      toggle.type = 'button';
+      toggle.textContent = 'Mehr anzeigen';
+      toggle.addEventListener('click', () => {
+        const expanded = desc.dataset.expanded === 'true';
+        desc.dataset.expanded = expanded ? 'false' : 'true';
+        toggle.textContent = expanded ? 'Mehr anzeigen' : 'Weniger anzeigen';
+      });
+
+      // Zeige Toggle nur, wenn Text wirklich länger ist (nach Render)
+      // Kleiner Trick: temporär volle Höhe messen
+      requestAnimationFrame(() => {
+        const prev = desc.dataset.expanded;
+        desc.dataset.expanded = 'true';
+        const fullHeight = desc.scrollHeight;
+        desc.dataset.expanded = 'false';
+        const collapsedHeight = 64; // wie in CSS
+        if (fullHeight <= collapsedHeight + 4) {
+          toggle.style.display = 'none';
+        }
+      });
+
+      const spacer = document.createElement('div');
+      spacer.className = 'spacer';
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      const link = document.createElement('a');
+      link.className = 'btn btn-primary';
+      link.href = p.affiliate_url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer nofollow';
+      link.textContent = 'Zum Angebot';
+
+      actions.appendChild(link);
+
+      body.appendChild(title);
+      body.appendChild(desc);
+      body.appendChild(toggle);
+      body.appendChild(spacer);   // schiebt Aktionen zuverlässig nach unten
+      body.appendChild(actions);
+
+      article.appendChild(img);
+      article.appendChild(body);
+      return article;
+    }
+
+    function render(list){
+      grid.innerHTML = '';
+      list.forEach(p => grid.appendChild(productCard(p)));
+    }
+
+    // Suche/Sortierung
+    const qIn = document.getElementById('q');
+    const sortIn = document.getElementById('sort');
+    document.getElementById('refresh').addEventListener('click', update);
+    qIn.addEventListener('input', update);
+    sortIn.addEventListener('change', update);
+
+    function update(){
+      const q = qIn.value.trim().toLowerCase();
+      let list = products.filter(p => (p.title + ' ' + p.desc).toLowerCase().includes(q));
+      const sort = sortIn.value;
+      if (sort === 'az') list.sort((a,b) => a.title.localeCompare(b.title));
+      if (sort === 'za') list.sort((a,b) => b.title.localeCompare(a.title));
+      render(list);
+    }
+
+    update();
+  </script>
+</body>
+</html>
